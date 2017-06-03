@@ -1,0 +1,26 @@
+image: docker:latest
+services:
+- docker:dind
+
+stages:
+- build
+- test
+
+variables:
+  COMMIT_IMAGE: registry.gitlab.com/sjcp/github/docker-temp/docker-temp:$CI_COMMIT_SHA
+
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+
+build:
+  stage: build
+  script:
+    - docker build --pull -t $COMMIT_IMAGE .
+    - docker push $COMMIT_IMAGE
+
+test:
+  stage: test
+  script:
+    - docker pull $COMMIT_IMAGE
+    - docker run $COMMIT_IMAGE
+
